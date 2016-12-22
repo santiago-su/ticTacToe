@@ -145,9 +145,13 @@ $(document).ready(function() {
       turn = !turn
       counter++;
       if (turn) {
+        var imgO = '<img class="o" src="./images/o.svg">';
+        $(this).append(imgO);
         move($(this).data('num'), 'o');
         winner()
       } else {
+        var imgX = '<img class="x" src="./images/x.svg">';
+        $(this).append(imgX);
         move($(this).data('num'), 'x');
         winner();
       }
