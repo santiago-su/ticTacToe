@@ -1,11 +1,11 @@
 $(document).ready(function() {
+  // Wait for animations to start before showing start buttons
   $('.start-buttons').hide();
   $('.start-buttons').fadeIn(2000);
+  $('.reset-buttons').hide();
 
   // Define variables
-
   var clientSocket = io();
-  var turn = false;
   var matrix = [0,1,2,
                 3,4,5,
                 6,7,8];
@@ -13,6 +13,8 @@ $(document).ready(function() {
   var answers = Array(9);
   var counter = 0;
   var win = false;
+  var playerOne = { turn: true, id: "" };
+  var playerTwo = { turn: false, id: "" };
 
   // Check if rows are in a win state
   var rows = function(player, row, matrixLength) {
@@ -67,30 +69,21 @@ $(document).ready(function() {
   // Handle win
   var winner = function() {
     if (checkXwin()) {
-      alert('X won');
-      resetBoard();
+      clientSocket.emit('winState', { winner: "X" });
     } else if (checkOwin()) {
-      alert('O won')
-      resetBoard();
+      clientSocket.emit('winState', { winner: "O" });
     } else {
       if (counter === 9) {
-        alert('Draw')
-        resetBoard();
+        clientSocket.emit('winState', { winner: 'draw' });
+        // resetBoard();
       }
     }
   }
 
   // Generate an empty game board
-  var generateGameBoard = function() {
-    for(var i = 0; i < 3; i++) {
-      $('#game-board').append('<div class="box" data-num="' + i + '" id="box-' +
-        (i+1) + '"></div>')
-    }
-    for(var i = 3; i < 6; i++) {
-      $('#game-board').append('<div class="box" data-num="' + i + '" id="box-' +
-        (i+1) + '"></div>')
-    }
-    for(var i = 6; i < 9; i++) {
+  var generateGameBoard = function(matrixLength) {
+    var length = matrixLength * matrixLength
+    for(var i = 0; i < length; i++) {
       $('#game-board').append('<div class="box" data-num="' + i + '" id="box-' +
         (i+1) + '"></div>')
     }
@@ -98,10 +91,9 @@ $(document).ready(function() {
 
   var resetBoard = function() {
     $('#game-board').html('');
-    answers = Array(9);
-    generateGameBoard();
-    counter = 0;
-    turn = false;
+    // answers = Array(9);
+    // generateGameBoard(3);
+    // counter = 0;
   }
 
   // Insert the moving piece on the answers matrix
@@ -127,24 +119,46 @@ $(document).ready(function() {
   }
 
   $('#waiting-screen').hide();
-  generateGameBoard();
+  generateGameBoard(3);
+
+  clientSocket.on('winState', function(state) {
+    resetBoard();
+    if (state.winner === 'draw') {
+      $('#win-screen').html("It's a draw");
+      $('.reset-buttons').fadeIn(2000);
+    } else {
+      $('#win-screen').html('Winner is ' + state.winner);
+      $('.reset-buttons').fadeIn(2000);
+    }
+  })
 
   // Receive board State and handle rewriting variables and re painting board
   clientSocket.on('boardState', function(state) {
-    console.log(state.answers, state.turn, state.counter)
+    console.log(state.answers, state.counter)
     answers = state.answers
-    turn = state.turn
+    playerOne.turn = state.playerTurn
+    playerTwo.turn = !state.playerTurn
     counter = state.counter
-    win = state.win
     paintBoard()
+
+    if (state.playerTurn) {
+      playerOne.id = state.playerId
+    } else {
+      playerTwo.id = state.playerId
+    }
+
+    if (state.playerId === clientSocket.id) {
+      $('div').css({cursor: 'wait'})
+    } else {
+      $('div').css({cursor: 'pointer'})
+    }
   })
 
   // Handle turns and first insertion of board state
   $('.box').each(function() {
     $(this).on('click', function() {
-      turn = !turn
       counter++;
-      if (turn) {
+      if (playerOne.turn) {
         var imgO = '<img class="o" src="./images/o.svg">';
         $(this).append(imgO);
         move($(this).data('num'), 'o');
@@ -156,12 +170,17 @@ $(document).ready(function() {
         winner();
       }
       // Emit the board state to our server with current variables
-      clientSocket.emit('boardState', { answers: answers, turn: turn, counter: counter });
+      clientSocket.emit('boardState', { answers: answers,
+                                        counter: counter,
+                                        playerTurn: !playerOne.turn,
+                                        playerId: clientSocket.id });
     })
   })
 
   // Check if two users are connected to start the game
   clientSocket.on('usersConnected', function (ids) {
+
+    playerOne.readableId, playerTwo.readableId = ids[0], ids[1];
 
     if (ids.length === 2) {
       $('#first-page').addClass('hidden');
@@ -186,6 +205,13 @@ $(document).ready(function() {
           }
         );
       }
+    })
+
+    $('#play-again').on('click', function() {
+      $(this).addClass('hidden');
+      generateGameBoard(3);
+      $('#win-screen').addClass('hidden');
+      $('#game-board').fadeIn(2000).css({ display: 'flex' });
     })
   })
 })
