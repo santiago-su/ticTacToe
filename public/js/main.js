@@ -208,10 +208,7 @@ $(document).ready(function() {
     })
 
     $('#play-again').on('click', function() {
-      $(this).addClass('hidden');
-      generateGameBoard(3);
-      $('#win-screen').addClass('hidden');
-      $('#game-board').fadeIn(2000).css({ display: 'flex' });
+      window.location.reload();
     })
   })
 })
