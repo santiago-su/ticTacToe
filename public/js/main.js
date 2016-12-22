@@ -12,17 +12,12 @@ $(document).ready(function() {
 
   var answers = Array(9);
   var counter = 0;
+  var win = false;
 
   // Check if rows are in a win state
   var rows = function(player, row, matrixLength) {
     var win = [];
-    var i = 0;
-    if (row === 2) {
-      i = 3;
-    } else if (row === 3) {
-      i = 6;
-    }
-    for (i; i < (matrixLength * row); i++) {
+    for (var i = (row - 1) * matrixLength; i < (matrixLength * row); i++) {
       win.push(answers[i] === player);
     }
     return win.every(function(a) { return !!a });
@@ -118,7 +113,6 @@ $(document).ready(function() {
     var imgO = '<img class="o" src="./images/o.svg">';
     var imgX = '<img class="x" src="./images/x.svg">';
     var box = $('div').find("[data-num='" + index + "']");
-    console.log(box)
     if(answers[index] === 'o' && box.is(':empty')) {
       $(box).append(imgO);
     } else if (answers[index] === 'x' && box.is(':empty')) {
@@ -141,6 +135,7 @@ $(document).ready(function() {
     answers = state.answers
     turn = state.turn
     counter = state.counter
+    win = state.win
     paintBoard()
   })
 
