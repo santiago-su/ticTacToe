@@ -21,3 +21,7 @@ Type `node index.js` to run locally
 * Handle multiple connections
 * Handle bigger matrixes for games on UI and client logic side
 * Create AI for "Start Solo"
+
+**Play it!**
+-
+[Tic Tac Toe](https://webtictactoe.herokuapp.com)
