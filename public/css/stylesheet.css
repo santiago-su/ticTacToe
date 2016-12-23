@@ -21,22 +21,6 @@ img:hover {
   border: 10px solid;
 }
 
-.flex-item {
-    background: tomato;
-    margin: 5px;
-    color: white;
-    font-weight: bold;
-    font-size: 1.5em;
-    text-align: center;
-    flex: 1 0 auto;
-    height:auto;
-}
-.flex-item:before {
-    content:'';
-    float:left;
-    padding-top:100%;
-}
-
 .box:hover {
   cursor: pointer;
 }

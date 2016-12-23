@@ -1,3 +1,5 @@
+// Checking which boxes are corners, top, left, right and bot
+// and setting the css programmatically depending on the size of the grid
 var setBoxCss = function(matrixLength) {
   console.log('setBoxCss()');
   var fullLength = matrixLength * matrixLength;
@@ -180,8 +182,10 @@ $(document).ready(function() {
     }
   }
 
+  //GENERATE GAME BOARD
   $('#waiting-screen').hide();
   generateGameBoard(3);
+  setBoxCss(3);
 
   clientSocket.on('winState', function(state) {
     resetBoard();
@@ -275,7 +279,5 @@ $(document).ready(function() {
       window.location.reload();
     })
   })
-  // Checking which boxes are corners, top, left, right and bot
-  setBoxCss(3);
 
 })
