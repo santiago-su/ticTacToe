@@ -15,11 +15,9 @@ io.on('connection', function(socket) {
   socket.on('boardState', function(state) {
     io.emit('boardState', state);
     socket.broadcast.emit(state.playerId);
-    console.log(state);
   })
   socket.on('winState', function(state) {
     io.emit('winState', state);
-    console.log(state);
   })
 });
 

@@ -1,8 +1,74 @@
+var setBoxCss = function(matrixLength) {
+  console.log('setBoxCss()');
+  var fullLength = matrixLength * matrixLength;
+  var topBoxes = [];
+  var rightBoxes = [];
+  var botBoxes = [];
+  var leftBoxes = [];
+  var leftTopCorner = 1;
+  var rightTopCorner = matrixLength;
+  var rightBotCorner = fullLength;
+  var leftBotCorner = fullLength - matrixLength + 1;
+  for (var i = 2; i < matrixLength; i++) {
+    topBoxes.push(i);
+  }
+  for (var i = matrixLength; i <= fullLength; i+= matrixLength) {
+    rightBoxes.push(i);
+  }
+  for (var i = fullLength; i > fullLength - matrixLength; i--) {
+    botBoxes.push(i);
+  }
+  for (var i = matrixLength + 1; i < fullLength; i+= matrixLength) {
+    leftBoxes.push(i)
+  }
+  rightBoxes.shift()
+  rightBoxes.pop()
+  botBoxes.shift()
+  botBoxes.pop()
+  leftBoxes.pop()
+  $('.box').css({ width: Math.floor(100/matrixLength) + "%" })
+  $('.box').each(function() {
+    if (leftTopCorner === Number($(this).attr('id'))) {
+      $(this).css({ borderTop: '0', borderLeft: '0'})
+    }
+    if (rightTopCorner === Number($(this).attr('id'))) {
+      $(this).css({ borderTop: '0', borderRight: '0'})
+    }
+    if (leftBotCorner === Number($(this).attr('id'))) {
+      $(this).css({ borderLeft: '0', borderBottom: '0'})
+    }
+    if (rightBotCorner === Number($(this).attr('id'))) {
+      $(this).css({ borderBottom: '0', borderRight: '0'})
+    }
+    for (var i = 0; i < topBoxes.length; i++) {
+      if (topBoxes[i] === Number($(this).attr('id'))) {
+        $(this).css({ borderTop: '0'})
+      }
+    }
+    for (var i = 0; i < rightBoxes.length; i++) {
+      if (rightBoxes[i] === Number($(this).attr('id'))) {
+        $(this).css({ borderRight: '0'})
+      }
+    }
+    for (var i = 0; i < botBoxes.length; i++) {
+      if (botBoxes[i] === Number($(this).attr('id'))) {
+        $(this).css({ borderBottom: '0'})
+      }
+    }
+    for (var i = 0; i < leftBoxes.length; i++) {
+      if (leftBoxes[i] === Number($(this).attr('id'))) {
+        $(this).css({ borderLeft: '0'})
+      }
+    }
+  })
+}
+
 $(document).ready(function() {
   // Wait for animations to start before showing start buttons
   $('.start-buttons').hide();
   $('.start-buttons').fadeIn(2000);
   $('.reset-buttons').hide();
+  $('#win-screen').hide();
 
   // Define variables
   var clientSocket = io();
@@ -12,7 +78,6 @@ $(document).ready(function() {
 
   var answers = Array(9);
   var counter = 0;
-  var win = false;
   var playerOne = { turn: true, id: "" };
   var playerTwo = { turn: false, id: "" };
 
@@ -84,16 +149,13 @@ $(document).ready(function() {
   var generateGameBoard = function(matrixLength) {
     var length = matrixLength * matrixLength
     for(var i = 0; i < length; i++) {
-      $('#game-board').append('<div class="box" data-num="' + i + '" id="box-' +
+      $('#game-board').append('<div class="box" data-num="' + i + '" id="'+
         (i+1) + '"></div>')
     }
   }
 
   var resetBoard = function() {
     $('#game-board').html('');
-    // answers = Array(9);
-    // generateGameBoard(3);
-    // counter = 0;
   }
 
   // Insert the moving piece on the answers matrix
@@ -125,16 +187,17 @@ $(document).ready(function() {
     resetBoard();
     if (state.winner === 'draw') {
       $('#win-screen').html("It's a draw");
+      $('#win-screen').show()
       $('.reset-buttons').fadeIn(2000);
     } else {
       $('#win-screen').html('Winner is ' + state.winner);
+      $('#win-screen').show()
       $('.reset-buttons').fadeIn(2000);
     }
   })
 
   // Receive board State and handle rewriting variables and re painting board
   clientSocket.on('boardState', function(state) {
-    console.log(state.answers, state.counter)
     answers = state.answers
     playerOne.turn = state.playerTurn
     playerTwo.turn = !state.playerTurn
@@ -207,8 +270,12 @@ $(document).ready(function() {
       }
     })
 
+    // Handle play again with same player, hacky by reloading page
     $('#play-again').on('click', function() {
       window.location.reload();
     })
   })
+  // Checking which boxes are corners, top, left, right and bot
+  setBoxCss(3);
+
 })
